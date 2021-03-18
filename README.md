@@ -154,8 +154,8 @@ LOG_LINES=0		# Number of ClickHouse log lines to display. 0 - disable output
 Change the value of the ZooKeeperHosts parameter in the script, which is responsible for displaying Apache ZooKeeper cluster status.
 ```
 # Apache ZooKeeper hosts
-ZooKeeperHosts=""								# "" - disable output
-#ZooKeeperHosts="zoo_server_1 zoo_server_2 zoo_server_3"		# Servers list, hostnames. Format: "server_1" "server_2" ... 
+ZooKeeperHosts=""						# "" - disable output
+#ZooKeeperHosts="zoo_server_1 zoo_server_2 zoo_server_3"	# Servers list, hostnames. Format: "server_1" "server_2" ... 
 ```
 
 #### Examples of work:
@@ -165,7 +165,7 @@ Inserting data into tutorial.hits_v1 table with MergeTree engine. In active **Qu
 ![clickhouse_activity1](media/ch_activity_insert_mergetree.png)
 
 
-Inserting data into the tutorial.hits_replica table with the ReplicatedMergeTree engine. In active **Queries**, the INSERT operation is observed, the progress of the **Merge** operation for tables of the MergeTree family is visible, and in the **Replication queue**, data is transferred to remote servers for tables of the ReplicatedMergeTree family.
+Inserting data into the tutorial.hits_replica table with the ReplicatedMergeTree engine. In active **Queries**, the INSERT operation is observed, the progress of the **Merge** operation for tables of the MergeTree family is visible, and in the **Replication queue** data is transferred to remote servers for tables of the ReplicatedMergeTree family.
 
 ![clickhouse_activity2](media/ch_activity_insert_replicatedmergetree.png)
 
@@ -417,8 +417,8 @@ Apache ZooKeeper status. Additionally, ZooKeeper processes, network connection a
 Change the value of the ZooKeeperHosts parameter in the script, which is responsible for displaying Apache ZooKeeper cluster status.
 ```
 # Apache ZooKeeper hosts
-ZooKeeperHosts=""								# "" - disable output
-#ZooKeeperHosts="zoo_server_1 zoo_server_2 zoo_server_3"		# Servers list, hostnames. Format: "server_1" "server_2" ... 
+ZooKeeperHosts=""						# "" - disable output
+#ZooKeeperHosts="zoo_server_1 zoo_server_2 zoo_server_3"	# Servers list, hostnames. Format: "server_1" "server_2" ... 
 ```
 
 #### Examples of work:
