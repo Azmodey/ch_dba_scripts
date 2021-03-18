@@ -110,6 +110,16 @@ Extract script files to separate directory (for example **~scripts/**) and grant
 ```
 
 
+## Setup
+
+If you plan to use Apache ZooKeeper cluster health monitoring, you should add this feature to the configuration file.
+Add the following lines to your ZooKeeper config file like **/opt/zookeeper/conf/zoo.cfg** :
+```
+# Whitelist for statistics
+4lw.commands.whitelist=stat, mntr
+```
+
+
 ---
 ### clickhouse_activity
 
@@ -149,6 +159,15 @@ ZooKeeperHosts=""								# "" - disable output
 ```
 
 #### Examples of work:
+
+Inserting data into tutorial.hits_v1 table with MergeTree engine. In active **Queries**, the INSERT operation is observed, the progress of the **Merge** operation is visible for tables of the MergeTree family.
+
+![clickhouse_activity1](media/ch_activity_insert_mergetree.png)
+
+
+Inserting data into the tutorial.hits_replica table with the ReplicatedMergeTree engine. In active **Queries**, the INSERT operation is observed, the progress of the **Merge** operation for tables of the MergeTree family is visible, and in the **Replication queue**, data is transferred to remote servers for tables of the ReplicatedMergeTree family.
+
+![clickhouse_activity2](media/ch_activity_insert_replicatedmergetree.png)
 
 
 ---
@@ -200,7 +219,7 @@ Replication:
 Queries:
 - Longest running queries.
 
-System activity:
+System activity (from system.metric_log table):
 - last 14 days;
 - today by hours;
 - today by minute.
@@ -210,6 +229,20 @@ Activity:
 - Queries that is being processed. Ordered by memory usage.
 
 #### Examples of work:
+
+General information.
+
+![clickhouse_information1](media/ch_information1_general.png)
+
+
+Tables.
+
+![clickhouse_information2](media/ch_information2_tables.png)
+
+
+System activity history and Queries that is being processed.
+
+![clickhouse_information3](media/ch_information3_activity.png)
 
 
 ---
@@ -448,5 +481,4 @@ Apache ZooKeeper log: /opt/zookeeper/logs/zookeeper-zookeeper-server-c7clickhous
 2021-03-18 11:38:41,118 [myid:1] - INFO  [QuorumPeer[myid=1](plain=0.0.0.0:2181)(secure=disabled):RequestPathMetricsCollector@116] - zookeeper.pathStats.enabled = false
 2021-03-18 11:38:41,120 [myid:1] - INFO  [QuorumPeer[myid=1](plain=0.0.0.0:2181)(secure=disabled):ZooKeeperServer@1471] - The max bytes for all large requests are set to 104857600
 2021-03-18 11:38:41,120 [myid:1] - INFO  [QuorumPeer[myid=1](plain=0.0.0.0:2181)(secure=disabled):ZooKeeperServer@1485] - The large request threshold is set to -1
-
 ```
