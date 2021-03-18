@@ -7,7 +7,7 @@ LOG_LINES=0								# Number of ClickHouse log lines to display. 0 - disable outp
 LOG_FILENAME="/var/log/clickhouse-server/clickhouse-server.log"		# ClickHouse log file name
 
 # Apache ZooKeeper hosts
-ZooKeeperHosts=""								# "" - disable output
+ZooKeeperHosts=""							# "" - disable output
 #ZooKeeperHosts="zoo_server_1 zoo_server_2 zoo_server_3"		# Servers list, hostnames. Format: "server_1" "server_2" ... 
 
 

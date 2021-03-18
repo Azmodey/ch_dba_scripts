@@ -4,7 +4,7 @@
 
 
 # Apache ZooKeeper hosts
-ZooKeeperHosts=""								# "" - disable output
+ZooKeeperHosts=""							# "" - disable output
 #ZooKeeperHosts="zoo_server_1 zoo_server_2 zoo_server_3"		# Servers list, hostnames. Format: "server_1" "server_2" ... 
 
 
