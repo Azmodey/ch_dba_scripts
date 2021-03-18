@@ -42,7 +42,7 @@ Settings:
 - Settings that have been changed from its default values;
 - Settings profiles. Properties of configured setting profiles;
 - Settings profile elements. Content of the settings profile;
-- Error codes with the number of times they have been triggered
+- Error codes with the number of times they have been triggered.
 
 Users, roles, profiles, quotas, grants:
 - Users;
@@ -83,7 +83,7 @@ Activity:
 - Queries that is being processed. Ordered by memory usage.
 
 
-#### Small scripts to manage ClickHouse:
+#### Small scripts to manage ClickHouse and Apache ZooKeeper:
 - [scripts/clickhouse_start.sh](#clickhouse_start). Start ClickHouse systemctl service, confirmation is required.
 - [scripts/clickhouse_stop.sh](#clickhouse_stop). Stop ClickHouse systemctl service, confirmation is required.
 - [scripts/clickhouse_status.sh](#clickhouse_status). ClickHouse status. Additionally, ClickHouse processes and network connection are displayed.
@@ -174,6 +174,7 @@ Inserting data into the tutorial.hits_replica table with the ReplicatedMergeTree
 ### clickhouse_information
 
 ClickHouse information script, a single tape with details about ClickHouse work.
+
 General information:
 - ClickHouse version;
 - ClickHouse disks;
@@ -188,7 +189,7 @@ Settings:
 - Settings that have been changed from its default values;
 - Settings profiles. Properties of configured setting profiles;
 - Settings profile elements. Content of the settings profile;
-- Error codes with the number of times they have been triggered
+- Error codes with the number of times they have been triggered.
 
 Users, roles, profiles, quotas, grants:
 - Users;
