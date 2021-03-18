@@ -315,7 +315,7 @@ SELECT toStartOfHour(event_time) AS time,
  WHERE event_date >= date_sub(HOUR, 48, today())
  GROUP BY time ORDER BY time FORMAT PrettyCompact"
 
-# today by minute (last 30 minutes)
+# today by minute (last 60 minutes)
 clickhouse-client --query "
 SELECT toStartOfMinute(event_time) AS time,
        sum(ProfileEvent_UserTimeMicroseconds) AS user_time,
@@ -329,7 +329,7 @@ SELECT toStartOfMinute(event_time) AS time,
        sum(ProfileEvent_MergedRows) as merged_rows,
        bar(merged_rows, 0, $MAX_MERGED_ROWS, 15) AS merged_rows_bar
   FROM system.metric_log
- WHERE event_time >= timestamp_sub(minute, 30, now())
+ WHERE event_time >= timestamp_sub(minute, 60, now())
  GROUP BY time ORDER BY time FORMAT PrettyCompact"
 echo
 
