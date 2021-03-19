@@ -73,7 +73,7 @@ Replication:
 Queries:
 - Longest running queries.
 
-System activity:
+System activity (from system.metric_log table):
 - last 14 days;
 - today by hours;
 - today by minute.
