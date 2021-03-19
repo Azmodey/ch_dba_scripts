@@ -99,13 +99,13 @@ Activity:
 
 As user **root**, download the latest version of the scripts collection (see [Releases](https://github.com/Azmodey/ch_dba_scripts/releases) page):
 ```
-# wget https://github.com/Azmodey/ch_dba_scripts/archive/1.0.0.tar.gz
+# wget https://github.com/Azmodey/ch_dba_scripts/archive/1.1.0.tar.gz
 ```
 
 Extract script files to separate directory (for example **~scripts/**) and grant the necessary execution rights:
 ```
-# tar xvzf 1.0.0.tar.gz
-# mv ch_dba_scripts-1.0.0/scripts ~/scripts
+# tar xvzf 1.1.0.tar.gz
+# mv ch_dba_scripts-1.1.0/scripts ~/scripts
 # chmod 700 ~/scripts/*.sh
 ```
 
