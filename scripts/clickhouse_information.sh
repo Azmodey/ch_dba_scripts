@@ -151,28 +151,28 @@ SELECT database, table, count(*) AS parts,
     round((sum(data_compressed_bytes) / sum(data_uncompressed_bytes)) * 100., 2) AS percentage
 FROM system.parts WHERE active='1'
 GROUP BY database, table 
-ORDER BY database, rows DESC
+ORDER BY rows DESC
 LIMIT 50 FORMAT PrettyCompact"
 echo
 
 echo "Top tables by size:"
 clickhouse-client --query "
-SELECT database, name, engine, is_temporary, metadata_modification_time, storage_policy, total_rows, round(sum(total_bytes) / 1024/1024/1024, 2) as size_gb
+SELECT database, name, engine, storage_policy, total_rows as rows, formatReadableSize(sum(total_bytes)) as size, is_temporary, metadata_modification_time
 FROM system.tables 
-WHERE database != 'system' 
+--WHERE database != 'system' 
+WHERE total_rows > 0
 GROUP BY database, name, engine, is_temporary, metadata_modification_time, storage_policy, total_rows, total_bytes
-ORDER BY database, total_bytes DESC 
-LIMIT 10 FORMAT PrettyCompact"
+ORDER BY sum(total_bytes) DESC 
+LIMIT 20 FORMAT PrettyCompact"
 echo
 
-echo "Top tables MergeTree families by size:"
+echo "Parts of tables MergeTree families:"
 clickhouse-client --query "
-SELECT database, table, engine, disk_name, sum(rows) as rows, round(sum(bytes) / 1024/1024/1024, 2) as size_gb, countIf(active) data_parts_active, countIf(not active) data_parts_not_active
+SELECT database, table, engine, disk_name, countIf(active) data_parts_active, countIf(not active) data_parts_not_active
 FROM system.parts
--- WHERE active
 GROUP BY database, table, engine, disk_name
-ORDER BY size_gb DESC 
-LIMIT 10 FORMAT PrettyCompact"
+ORDER BY database, table DESC 
+LIMIT 20 FORMAT PrettyCompact"
 echo
 
 echo "Tables in memory (Memory engine):"
@@ -187,7 +187,6 @@ echo
 echo "Detached parts of MergeTree tables:"
 clickhouse-client --query "SELECT * FROM system.detached_parts ORDER BY database, table FORMAT PrettyCompact"
 echo
-
 
 
 echo -e "${CYANLIGHT}---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------${NC}"
@@ -251,6 +250,28 @@ SELECT user,
  LIMIT 10 FORMAT PrettyCompact"
 echo
 
+
+echo "Queries by memory consumption:"
+clickhouse-client --query "
+SELECT user, 
+    --client_hostname AS host, 
+    --client_name AS client, 
+    --formatDateTime(query_start_time, '%T') AS started, 
+    query_duration_ms / 1000 AS dur_sec, 
+    round(memory_usage / 1048576) AS mem_mb,
+    result_rows, 
+    formatReadableSize(result_bytes) AS result_size, 
+    read_rows, 
+    formatReadableSize(read_bytes) AS read_size,
+    written_rows as write_rows, 
+    formatReadableSize(written_bytes) AS write_size,
+    query_id,
+    substring(query,1,30) as query
+  FROM system.query_log
+ WHERE type = 2
+ ORDER BY mem_mb DESC
+ LIMIT 10 FORMAT PrettyCompact"
+echo
 
 
 echo -e "${CYANLIGHT}---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------${NC}"
@@ -339,8 +360,8 @@ echo -e "${CYANLIGHT}-----------------------------------------------------------
 
 echo "Queries that is being processed. Ordered by elapsed time:"
 echo "- full SQL text by query_id: SELECT distinct query FROM system.query_log WHERE query_id='' FORMAT TabSeparatedRaw"
-echo "- kill: KILL QUERY WHERE query_id='2-857d-4a57-9ee0-327da5d60a90'"
-echo "- kill: KILL QUERY WHERE user='username' SYNC"
+echo "- kill by query_id: KILL QUERY WHERE query_id=''"
+echo "- kill all queries by user: KILL QUERY WHERE user='' SYNC"
 clickhouse-client --query "SELECT elapsed as time_seconds, formatReadableSize(memory_usage) as memory, formatReadableSize(read_bytes) as read, read_rows, total_rows_approx as total_rows, user, address as client, query_id, substring(query,1,48) as query
 FROM system.processes
 ORDER BY elapsed desc FORMAT PrettyCompact"

@@ -58,7 +58,7 @@ Users, roles, profiles, quotas, grants:
 Tables:
 - Tables compress ratio;
 - Top tables by size;
-- Top tables MergeTree families by size;
+- Parts of tables MergeTree families;
 - Tables in memory (Memory engine);
 - Detached parts of MergeTree tables.
 
@@ -71,7 +71,8 @@ Replication:
 - Mutations of MergeTree tables and their progress.
 
 Queries:
-- Longest running queries.
+- Longest running queries;
+- Queries by memory consumption.
 
 System activity (from system.metric_log table):
 - last 14 days;
@@ -99,13 +100,13 @@ Activity:
 
 As user **root**, download the latest version of the scripts collection (see [Releases](https://github.com/Azmodey/ch_dba_scripts/releases) page):
 ```
-# wget https://github.com/Azmodey/ch_dba_scripts/archive/1.1.0.tar.gz
+# wget https://github.com/Azmodey/ch_dba_scripts/archive/1.2.0.tar.gz
 ```
 
 Extract script files to separate directory (for example **~scripts/**) and grant the necessary execution rights:
 ```
-# tar xvzf 1.1.0.tar.gz
-# mv ch_dba_scripts-1.1.0/scripts ~/scripts
+# tar xvzf 1.2.0.tar.gz
+# mv ch_dba_scripts-1.2.0/scripts ~/scripts
 # chmod 700 ~/scripts/*.sh
 ```
 
@@ -205,7 +206,7 @@ Users, roles, profiles, quotas, grants:
 Tables:
 - Tables compress ratio;
 - Top tables by size;
-- Top tables MergeTree families by size;
+- Parts of tables MergeTree families;
 - Tables in memory (Memory engine);
 - Detached parts of MergeTree tables.
 
@@ -218,7 +219,8 @@ Replication:
 - Mutations of MergeTree tables and their progress.
 
 Queries:
-- Longest running queries.
+- Longest running queries;
+- Queries by memory consumption.
 
 System activity (from system.metric_log table):
 - last 14 days;
