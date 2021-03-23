@@ -117,7 +117,7 @@ Extract script files to separate directory (for example **~scripts/**) and grant
 # tar xvzf 1.3.0.tar.gz
 # mv ch_dba_scripts-1.3.0/scripts ~/scripts
 # chmod 700 ~/scripts/*.sh
-$ chmod 600 ~/scripts/settings.txt
+# chmod 600 ~/scripts/settings.txt
 ```
 
 
@@ -128,7 +128,7 @@ Modify file **settings.txt**. Uncomment and correct the entries for your current
 CH_HOST="localhost"		# Host name. Default: localhost
 CH_PORT="9000"			# Port. Default: 9000
 
-CH_LOGIN=""				# Administrative user login
+CH_LOGIN=""			# Administrative user login
 CH_PASSWORD=""			# Administrative user password 
 ```
 
