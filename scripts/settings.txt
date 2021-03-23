@@ -1,0 +1,7 @@
+# ClickHouse settings
+
+CH_HOST="localhost"		# Host name. Default: localhost
+CH_PORT="9000"			# Port. Default: 9000
+
+CH_LOGIN=""				# Administrative user login
+CH_PASSWORD=""			# Administrative user password

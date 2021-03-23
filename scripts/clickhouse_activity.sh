@@ -13,6 +13,20 @@ ZooKeeperHosts=""							# "" - disable output
 
 
 # ------------------------------------------------
+# ClickHouse client
+source ./settings.txt
+
+if [[ $CH_HOST && $CH_PORT ]]; then
+  CH_CLIENT="clickhouse-client --host=$CH_HOST --port=$CH_PORT"
+else
+  CH_CLIENT="clickhouse-client"
+fi
+
+if [[ $CH_LOGIN && $CH_PASSWORD ]]; then
+  CH_CLIENT="$CH_CLIENT --user=$CH_LOGIN --password=$CH_PASSWORD"
+fi
+
+
 # Colors
 GREYDARK='\033[1;30m'
 RED='\033[0;31m'
@@ -55,11 +69,22 @@ done
 
 
 # ClickHouse clusters
-CLICKHOUSE_CLUSTERS=`clickhouse-client --query "SELECT distinct host_name FROM system.clusters WHERE host_name not in ('127.0.0.1', '127.0.0.2', 'localhost')"`
+CLICKHOUSE_CLUSTERS=`$CH_CLIENT --query "SELECT distinct host_name FROM system.clusters WHERE host_name not in ('127.0.0.1', '127.0.0.2', 'localhost')"`
 
 CLICKHOUSE_CLUSTER_STATUS="| "
 for cluster in $CLICKHOUSE_CLUSTERS ; do 
-  CLUSTER_VER=`clickhouse-client --host $cluster --query "SELECT version()" 2> /dev/null`
+
+  if [[ $CH_HOST && $CH_PORT ]]; then
+    CH_CLIENT_CL="clickhouse-client --host=$cluster --port=$CH_PORT"
+  else
+    CH_CLIENT_CL="clickhouse-client --host=$cluster"
+  fi
+
+  if [[ $CH_LOGIN && $CH_PASSWORD ]]; then
+    CH_CLIENT_CL="$CH_CLIENT_CL --user=$CH_LOGIN --password=$CH_PASSWORD"
+  fi
+
+  CLUSTER_VER=`$CH_CLIENT_CL --query "SELECT version()" 2> /dev/null`
   #echo "[$cluster] ver [$CLUSTER_VER]"
 
   re='^[0-9]+([.][0-9]+)+([.][0-9]+)+([.][0-9]+)$'
@@ -123,21 +148,21 @@ echo
 # ------------------------------------------------
 
 echo -e "${GREENLIGHT}ClickHouse disks:${NC}"
-clickhouse-client --query "SELECT name, path, formatReadableSize(sum(free_space)) as free_space, formatReadableSize(sum(total_space)) as total_space, 
+$CH_CLIENT --query "SELECT name, path, formatReadableSize(sum(free_space)) as free_space, formatReadableSize(sum(total_space)) as total_space, 
        formatReadableSize(sum(keep_free_space)) as keep_free_space, type
 FROM system.disks
 GROUP BY name, path, type FORMAT PrettyCompact"
 echo
 
 echo -e "${GREENLIGHT}Databases:${NC}"
-clickhouse-client --query "SELECT d.name, formatReadableSize(sum(p.bytes_on_disk)) as size, d.engine, d.data_path, d.metadata_path, d.uuid 
+$CH_CLIENT --query "SELECT d.name, formatReadableSize(sum(p.bytes_on_disk)) as size, d.engine, d.data_path, d.metadata_path, d.uuid 
 FROM system.databases d LEFT JOIN system.parts p ON d.name = p.database
 GROUP BY d.name, d.engine, d.data_path, d.metadata_path, d.uuid 
 ORDER BY sum(p.bytes_on_disk) DESC FORMAT PrettyCompact"
 echo
 
 echo -e "${GREENLIGHT}Clusters:${NC}"
-clickhouse-client --query "
+$CH_CLIENT --query "
   SELECT cluster, shard_num, shard_weight, replica_num, host_name, host_address, port, is_local, errors_count, estimated_recovery_time
   FROM system.clusters 
   WHERE host_name not in ('127.0.0.1', '127.0.0.2', 'localhost')
@@ -146,10 +171,10 @@ echo -e "${GREENLIGHT}Cluster status:${NC} $CLICKHOUSE_CLUSTER_STATUS"
 echo
 
 
-replicated_tables=`clickhouse-client --query "SELECT table FROM system.replicas"`
+replicated_tables=`$CH_CLIENT --query "SELECT table FROM system.replicas"`
 if [[ ${#replicated_tables} >0 ]]; then 
   echo -e "${GREENLIGHT}Replicated tables located on the local server:${NC}"
-  clickhouse-client --query "
+  $CH_CLIENT --query "
   SELECT database, table, engine, is_leader as leader, is_readonly as readonly, parts_to_check, 
          queue_size, inserts_in_queue as queue_insert, merges_in_queue as queue_merge,	-- очередь
          log_max_index, log_pointer, total_replicas as tot_repl, active_replicas as act_repl -- ZooKeeper
@@ -159,13 +184,13 @@ if [[ ${#replicated_tables} >0 ]]; then
 fi
 
 
-replication_problems=`clickhouse-client --query "SELECT table FROM system.replicas 
+replication_problems=`$CH_CLIENT --query "SELECT table FROM system.replicas 
  WHERE is_readonly OR is_session_expired OR future_parts > 20 OR parts_to_check > 10 OR queue_size > 20 
     OR inserts_in_queue > 10 OR log_max_index - log_pointer > 10 OR total_replicas < 2 
     OR active_replicas < total_replicas"`
 if [[ ${#replication_problems} >0 ]]; then 
   echo -e "${REDLIGHT}Replication problems:${NC}"
-  clickhouse-client --query "
+  $CH_CLIENT --query "
   SELECT database, table, is_leader, total_replicas, active_replicas 
     FROM system.replicas 
    WHERE is_readonly 
@@ -182,10 +207,10 @@ if [[ ${#replication_problems} >0 ]]; then
 fi
 
 
-replication_queue=`clickhouse-client --query "SELECT table FROM system.replication_queue"`
+replication_queue=`$CH_CLIENT --query "SELECT table FROM system.replication_queue"`
 if [[ ${#replication_queue} >0 ]]; then 
   echo -e "${GREENLIGHT}Replication queue.${NC} Tasks from replication queues stored in ZooKeeper for tables in the ReplicatedMergeTree family:"
-  clickhouse-client --query "
+  $CH_CLIENT --query "
   SELECT database, table, replica_name, position, node_name, type, create_time, num_tries, last_attempt_time, num_postponed, last_postpone_time
   FROM system.replication_queue FORMAT PrettyCompact"
   echo
@@ -193,10 +218,10 @@ if [[ ${#replication_queue} >0 ]]; then
 fi
 
 
-replicated_fetches=`clickhouse-client --query "SELECT table FROM system.replicated_fetches"`
+replicated_fetches=`$CH_CLIENT --query "SELECT table FROM system.replicated_fetches"`
 if [[ ${#replicated_fetches} >0 ]]; then 
   echo -e "${GREENLIGHT}Replicated fetches.${NC} Currently running background fetches:"
-  clickhouse-client --query "
+  $CH_CLIENT --query "
   SELECT database, table, elapsed, progress, result_part_name, partition_id, source_replica_hostname, source_replica_port, interserver_scheme, to_detached, thread_id 
   FROM system.replicated_fetches ORDER BY database, table FORMAT PrettyCompact"
   echo
@@ -204,35 +229,35 @@ if [[ ${#replicated_fetches} >0 ]]; then
 fi
 
 
-distribution_queue=`clickhouse-client --query "SELECT table FROM system.distribution_queue"`
+distribution_queue=`$CH_CLIENT --query "SELECT table FROM system.distribution_queue"`
 if [[ ${#distribution_queue} >0 ]]; then 
   echo -e "${GREENLIGHT}Distribution queue.${NC} Local files that are in the queue to be sent to the shards. Contain new parts that are created by inserting new data into the Distributed table:"
-  clickhouse-client --query "SELECT database, table, is_blocked, error_count, data_files, data_compressed_bytes, last_exception FROM system.distribution_queue ORDER BY database, table FORMAT PrettyCompact"
+  $CH_CLIENT --query "SELECT database, table, is_blocked, error_count, data_files, data_compressed_bytes, last_exception FROM system.distribution_queue ORDER BY database, table FORMAT PrettyCompact"
   echo
   LOG_LINES=$((LOG_LINES-5)) 
 fi
 
 
-merges=`clickhouse-client --query "SELECT table FROM system.merges"`
+merges=`$CH_CLIENT --query "SELECT table FROM system.merges"`
 if [[ ${#merges} >0 ]]; then 
   echo -e "${YELLOW}Merges and part mutations currently in process for tables in the MergeTree family:${NC}"
-  clickhouse-client --query "SELECT database, table, elapsed, progress, num_parts, rows_read, rows_written, memory_usage, merge_type, merge_algorithm FROM system.merges FORMAT PrettyCompact"
+  $CH_CLIENT --query "SELECT database, table, elapsed, progress, num_parts, rows_read, rows_written, memory_usage, merge_type, merge_algorithm FROM system.merges FORMAT PrettyCompact"
   echo
   LOG_LINES=$((LOG_LINES-5)) 
 fi
 
 
-table_mutations=`clickhouse-client --query "SELECT table FROM system.mutations"`
+table_mutations=`$CH_CLIENT --query "SELECT table FROM system.mutations"`
 if [[ ${#table_mutations} >0 ]]; then 
   echo -e "${YELLOW}Mutations of MergeTree tables and their progress (ALTER command):${NC}"
-  clickhouse-client --query "SELECT database, table, mutation_id, command, create_time, parts_to_do, is_done, latest_failed_part, latest_fail_time, latest_fail_reason FROM system.mutations FORMAT PrettyCompact"
+  $CH_CLIENT --query "SELECT database, table, mutation_id, command, create_time, parts_to_do, is_done, latest_failed_part, latest_fail_time, latest_fail_reason FROM system.mutations FORMAT PrettyCompact"
   echo
   LOG_LINES=$((LOG_LINES-5)) 
 fi
 
 
 echo -e "${GREENLIGHT}Queries that is being processed.${NC} Full SQL text by query_id: SELECT distinct query FROM system.query_log WHERE query_id='' FORMAT TabSeparatedRaw"
-clickhouse-client --query "SELECT user, address as client, elapsed as time_seconds, formatReadableSize(memory_usage) as memory, formatReadableSize(read_bytes) as read, read_rows, total_rows_approx as total_rows, query_id, substring(query,1,40) as query
+$CH_CLIENT --query "SELECT user, address as client, elapsed as time_seconds, formatReadableSize(memory_usage) as memory, formatReadableSize(read_bytes) as read, read_rows, total_rows_approx as total_rows, query_id, substring(query,1,40) as query
 FROM system.processes
 ORDER BY elapsed desc FORMAT PrettyCompact"
 echo
